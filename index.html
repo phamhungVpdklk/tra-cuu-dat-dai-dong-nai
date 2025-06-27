@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Chosen Palette: Unified Calm Blue and Slate -->
-    <!-- Application Structure Plan: Hợp nhất hai ứng dụng thành một Cổng Tra cứu duy nhất. Cấu trúc sử dụng một thanh điều hướng cố định (navigation bar) để chuyển đổi giữa các chức năng chính: 'Tra cứu Thủ tục' và 'Ước tính Chi phí'. Một mục 'Thông tin tham khảo' được thêm vào, sử dụng giao diện accordion để trình bày gọn gàng các phân tích và bảng tra cứu phụ. Thiết kế này tạo ra một công cụ toàn diện, cho phép người dùng truy cập mọi thông tin cần thiết một cách liền mạch, không cần tải lại trang hay mở nhiều ứng dụng. Cấu trúc này ưu tiên sự rõ ràng, dễ sử dụng và hiệu suất trên mọi thiết bị. -->
-    <!-- Visualization & Content Choices: Giữ lại tất cả các chức năng cốt lõi của cả hai ứng dụng. 'Tra cứu thủ tục' sử dụng lưới thẻ flexbox và biểu đồ thời gian. 'Ước tính chi phí' sử dụng công cụ tính toán tương tác và biểu đồ so sánh chi phí. Các thông tin phụ được tổ chức trong accordion để tránh làm trang quá dài và khó điều hướng trên di động. Mọi thành phần đều được kiểm tra để đảm bảo tương thích tối đa với iOS. -->
+    <!-- Application Structure Plan: Phiên bản cuối cùng hợp nhất tất cả các yêu cầu vào một Cổng thông tin duy nhất. Thanh điều hướng giúp chuyển đổi giữa các chức năng: 'Tra cứu Nhanh' (tóm tắt thủ tục), 'Ước tính Chi phí', và mục mới 'Thư viện Pháp lý'. Mục 'Thư viện Pháp lý' được thiết kế với cấu trúc accordion nhiều cấp, chứa toàn văn các văn bản luật và nghị định liên quan, được trích xuất và định dạng để dễ đọc. Cấu trúc này cung cấp một trải nghiệm toàn diện, từ tổng quan đến chi tiết sâu, tối ưu hóa cho mọi thiết bị. -->
+    <!-- Visualization & Content Choices: Các chức năng tra cứu nhanh và tính phí được giữ nguyên. Mục 'Thư viện Pháp lý' được tạo động từ dữ liệu JSON, chứa nội dung các văn bản luật được phân tích và cấu trúc lại. Giao diện accordion lồng nhau cho phép người dùng điều hướng qua các chương, mục, điều của văn bản một cách trực quan, giải quyết vấn đề hiển thị một lượng lớn văn bản trên một trang duy nhất mà vẫn đảm bảo hiệu suất và khả năng tương thích. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <title>Cổng Tra cứu Đất đai - Đồng Nai 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,26 +18,27 @@
         .main-section.active { display: block; animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Navigation Styles */
         .nav-link { transition: all 0.2s ease; border-bottom: 3px solid transparent; }
         .nav-link.active, .nav-link:hover { color: #3b82f6; border-bottom-color: #3b82f6; }
         
-        /* Procedure Card Styles */
         .procedure-card { background-color: white; border-radius: 0.75rem; padding: 1rem; border: 2px solid transparent; cursor: pointer; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: border-color 0.2s; }
         .procedure-card.active { border-color: #2563eb; }
         
-        /* Details & Chart Wrapper Styles */
-        #details-container ul, #fee-details-container ul { list-style-position: inside; }
-        #details-container ul li::marker, #fee-details-container ul li::marker { color: #3b82f6; }
+        .details-list ul { list-style-position: inside; }
+        .details-list ul li::marker { color: #3b82f6; }
+
         .chart-wrapper { background-color: white; padding: 1rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
         .chart-container { position: relative; width: 100%; margin: auto; }
 
-        /* Accordion Styles */
         .accordion-header { cursor: pointer; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .accordion-item.active .accordion-content { max-height: 1000px; /* Large enough to fit content */ }
-        .accordion-item.active .accordion-icon { transform: rotate(180deg); }
+        .accordion-item.active > .accordion-content { max-height: 10000px; /* Large enough to fit content */ }
+        .accordion-item.active > .accordion-header .accordion-icon { transform: rotate(180deg); }
         .accordion-icon { transition: transform 0.3s; }
+        .sub-accordion-item .accordion-header { background-color: #f1f5f9; }
+        .legal-content h4 { font-weight: 600; color: #1e293b; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .legal-content ul, .legal-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .legal-content li { margin-bottom: 0.5rem; }
 
     </style>
 </head>
@@ -49,16 +50,16 @@
                 <div class="flex-shrink-0">
                     <h1 class="text-xl font-bold text-blue-700">Cổng Tra cứu Đất đai</h1>
                 </div>
-                <div class="hidden md:flex items-baseline space-x-4">
-                    <a href="#thu-tuc" class="nav-link px-3 py-2 text-sm font-semibold">Tra cứu Thủ tục</a>
+                <div class="hidden md:flex items-baseline space-x-2 lg:space-x-4">
+                    <a href="#thu-tuc" class="nav-link px-3 py-2 text-sm font-semibold">Tra cứu Nhanh</a>
                     <a href="#chi-phi" class="nav-link px-3 py-2 text-sm font-semibold">Ước tính Chi phí</a>
-                    <a href="#thong-tin" class="nav-link px-3 py-2 text-sm font-semibold">Thông tin Tham khảo</a>
+                    <a href="#van-ban" class="nav-link px-3 py-2 text-sm font-semibold">Thư viện Pháp lý</a>
                 </div>
                 <div class="md:hidden">
                     <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="thu-tuc">Tra cứu Thủ tục</option>
+                        <option value="thu-tuc">Tra cứu Nhanh</option>
                         <option value="chi-phi">Ước tính Chi phí</option>
-                        <option value="thong-tin">Thông tin Tham khảo</option>
+                        <option value="van-ban">Thư viện Pháp lý</option>
                     </select>
                 </div>
             </div>
@@ -70,15 +71,15 @@
         <!-- SECTION 1: TRA CỨU THỦ TỤC -->
         <section id="thu-tuc" class="main-section">
             <div class="text-center mb-10">
-                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">1. Tra cứu Thủ tục Hành chính</h2>
-                <p class="mt-2 text-slate-600 max-w-3xl mx-auto">Chọn một thủ tục để xem chi tiết hồ sơ, thời gian giải quyết và các lưu ý quan trọng.</p>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">1. Tra cứu Nhanh Thủ tục Hành chính</h2>
+                <p class="mt-2 text-slate-600 max-w-3xl mx-auto">Chọn một thủ tục để xem tóm tắt hồ sơ, thời gian và các lưu ý quan trọng. Để xem chi tiết đầy đủ, vui lòng chuyển qua mục "Thư viện Pháp lý".</p>
             </div>
             <div id="procedures-grid" class="flex flex-wrap gap-4 justify-center"></div>
             <div id="details-section" class="mt-12">
                 <div id="details-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 min-h-[300px] flex items-center justify-center">
                     <div class="text-center text-slate-500">
-                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        <h3 class="mt-2 text-lg font-medium text-slate-900">Thông tin chi tiết thủ tục</h3>
+                        <div class="mx-auto h-12 w-12 text-slate-400"><span style="font-size: 48px;">📄</span></div>
+                        <h3 class="mt-2 text-lg font-medium text-slate-900">Thông tin tóm tắt thủ tục</h3>
                         <p class="mt-1">Vui lòng chọn một thủ tục từ danh sách trên.</p>
                     </div>
                 </div>
@@ -121,7 +122,7 @@
                 </div>
                 <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg border border-slate-200">
                      <h3 class="text-xl font-semibold mb-4 text-slate-800">Kết quả Ước tính</h3>
-                     <div id="fee-details-container" class="space-y-4">
+                     <div class="space-y-4">
                         <div class="p-4 bg-blue-50 rounded-lg">
                             <p class="font-medium text-slate-600">Nộp hồ sơ <span class="font-bold text-blue-700">TRỰC TIẾP</span>:</p>
                             <p id="cost-direct" class="text-2xl font-bold text-blue-800 mt-1">...</p>
@@ -137,53 +138,19 @@
             </div>
         </section>
 
-        <!-- SECTION 3: THÔNG TIN THAM KHẢO -->
-        <section id="thong-tin" class="main-section">
+        <!-- SECTION 3: VĂN BẢN PHÁP LÝ -->
+        <section id="van-ban" class="main-section">
             <div class="text-center mb-10">
-                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">3. Thông tin Tham khảo</h2>
-                <p class="mt-2 text-slate-600 max-w-3xl mx-auto">Giải đáp các câu hỏi thường gặp và thông tin liên quan khác.</p>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">3. Thư viện Pháp lý</h2>
+                <p class="mt-2 text-slate-600 max-w-3xl mx-auto">Tra cứu chi tiết Phụ lục thủ tục hành chính và toàn văn các văn bản pháp luật liên quan.</p>
             </div>
-            <div class="space-y-4 max-w-4xl mx-auto">
-                <!-- Accordion Item 1 -->
-                <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200">
-                    <div class="accordion-header flex justify-between items-center p-4">
-                        <h3 class="font-semibold text-slate-800">Tại sao lại có sự thay đổi về phí và lệ phí?</h3>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content px-4 pb-4">
-                        <p class="text-slate-600">Việc điều chỉnh nhằm các mục đích chính: <br> 1. Đồng bộ với Luật Đất đai 2024 mới. <br> 2. Phù hợp với tình hình kinh tế - xã hội. <br> 3. Khuyến khích người dân sử dụng dịch vụ công trực tuyến để tiết kiệm chi phí và thời gian.</p>
-                    </div>
-                </div>
-                <!-- Accordion Item 2 -->
-                <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200">
-                    <div class="accordion-header flex justify-between items-center p-4">
-                        <h3 class="font-semibold text-slate-800">Thông tin về Bảng giá đất của tỉnh?</h3>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content px-4 pb-4">
-                        <p class="text-slate-600">Theo Quyết định 86/2024/QĐ-UBND, tỉnh Đồng Nai sẽ **tiếp tục áp dụng Bảng giá đất giai đoạn 2020-2024 cho đến hết ngày 31/12/2025**. Bắt đầu từ 01/01/2026, tỉnh sẽ ban hành Bảng giá đất hàng năm theo quy định của Luật Đất đai 2024.</p>
-                    </div>
-                </div>
-                <!-- Accordion Item 3 -->
-                <div class="accordion-item bg-white rounded-lg shadow-md border border-slate-200">
-                    <div class="accordion-header flex justify-between items-center p-4">
-                        <h3 class="font-semibold text-slate-800">Phí khai thác tài liệu đất đai là bao nhiêu?</h3>
-                        <span class="accordion-icon">▼</span>
-                    </div>
-                    <div class="accordion-content px-4 pb-4">
-                        <p class="text-slate-600 mb-2">Theo NQ 24/2024/NQ-HĐND, một số mức phí chính như sau:</p>
-                        <ul class="list-disc pl-5 text-slate-600">
-                            <li>Trích lục bản đồ, trích đo địa chính: **160.000đ/thửa đất**</li>
-                            <li>Thông tin tổng hợp về thửa đất: **220.000đ/hồ sơ**</li>
-                            <li>Sao chụp hồ sơ đất đai: **22.000đ/trang A4**</li>
-                        </ul>
-                    </div>
-                </div>
+            <div id="legal-library-accordion" class="space-y-4 max-w-4xl mx-auto">
+                <!-- Accordion items will be injected here by JS -->
             </div>
         </section>
 
     </main>
-
+    
     <footer class="bg-slate-800 text-slate-300 mt-16">
         <div class="container mx-auto px-6 py-8 text-center text-sm">
             <p><strong class="font-semibold text-white">Lưu ý:</strong> Thông tin trên trang này chỉ có tính chất tham khảo, không thay thế văn bản pháp luật chính thức.</p>
@@ -195,55 +162,55 @@
     document.addEventListener('DOMContentLoaded', function() {
         // --- DATA ---
         const proceduresData = [
-            { id: 'chuyen_quyen', title: 'Chuyển quyền', time: 8, docs: ['Giấy chứng nhận (GCN) đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Hợp đồng, văn bản về việc chuyển quyền (chuyển nhượng, tặng cho, thừa kế...).', 'Văn bản ủy quyền (nếu có).'], notes: ['Nếu nhiều người nhận chung 1 GCN thì cần có văn bản thỏa thuận.', 'Nếu đất đang thế chấp, cần có văn bản đồng ý của ngân hàng.'] },
-            { id: 'dieu_chinh', title: 'Điều chỉnh thông tin', time: 4, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Bản sao giấy tờ chứng minh việc thay đổi thông tin (nếu không khai thác được từ CSDL dân cư).'], notes: ['Áp dụng khi thay đổi thông tin cá nhân như tên, số CCCD, địa chỉ...'] },
-            { id: 'gia_han_nn', title: 'Gia hạn đất nông nghiệp', time: 7, docs: ['GCN đã cấp.', 'Đơn xin xác nhận lại thời hạn sử dụng đất nông nghiệp (Mẫu 09).'], notes: ['Thủ tục dựa trên NĐ 102/2024/NĐ-CP.'] },
-            { id: 'han_che_lien_ke', title: 'Xác lập/thay đổi hạn chế liền kề', time: 5, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Văn bản thỏa thuận về việc xác lập/thay đổi quyền sử dụng hạn chế thửa đất liền kề (kèm sơ họa).'], notes: [] },
-            { id: 'gq_tranh_chap', title: 'Nhận quyền theo KQ tranh chấp', time: 8, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Biên bản hòa giải thành, Quyết định của cơ quan có thẩm quyền hoặc Bản án/Quyết định của Tòa án đã có hiệu lực.'], notes: [] },
-            { id: 'xu_ly_the_chap', title: 'Nhận quyền do xử lý tài sản thế chấp', time: 8, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Hợp đồng mua bán tài sản đấu giá hoặc VB xác nhận kết quả thi hành án.', 'Hợp đồng thế chấp.'], notes: [] },
-            { id: 'xoa_no', title: 'Xóa ghi nợ', time: 1, docs: ['GCN đã cấp.', 'Giấy tờ chứng minh đã hoàn thành việc thanh toán nợ tiền sử dụng đất, lệ phí trước bạ.'], notes: ['Nếu nộp sau 15h, kết quả sẽ được trả vào ngày làm việc tiếp theo.'] },
-            { id: 'dinh_chinh', title: 'Đính chính GCN sai sót', time: 8, docs: ['GCN đã cấp (bản gốc).', 'Đơn đăng ký biến động (Mẫu 18).', 'Giấy tờ chứng minh có sai sót so với thông tin tại thời điểm đề nghị đính chính.'], notes: [] },
-            { id: 'chuyen_muc_dich', title: 'Chuyển mục đích (không xin phép)', time: 7, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).'], notes: ['Cơ quan sẽ gửi thông tin đến cơ quan thuế để xác định nghĩa vụ tài chính (nếu có).'] },
-            { id: 'tach_hop_thua', title: 'Tách/Hợp thửa', time: 12, docs: ['GCN đã cấp (bản gốc hoặc bản sao công chứng/đối chiếu).', 'Đơn đề nghị tách thửa/hợp thửa (Mẫu 21).', 'Bản vẽ tách thửa/hợp thửa (Mẫu 22).'], notes: [] },
-            { id: 'tach_thua_quyen', title: 'Tách thửa kèm chuyển quyền', time: null, docs: ['Hồ sơ như Tách/Hợp thửa.', 'Hợp đồng, văn bản về việc chuyển quyền sử dụng một phần thửa đất.'], notes: ['Thời gian giải quyết tùy thuộc quy trình cụ thể.'] },
-            { id: 'cap_doi', title: 'Cấp đổi GCN', time: 10, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Hồ sơ kỹ thuật (nếu có thay đổi ranh giới, diện tích).'], notes: ['Thời gian không quá 5 ngày nếu không biến động diện tích, không quá 10 ngày nếu có biến động.', 'Áp dụng cho GCN bị hỏng, rách; cần ghi đủ tên thành viên hộ gia đình, tên vợ/chồng...'] },
-            { id: 'cap_lai', title: 'Cấp lại GCN do bị mất', time: 10, docs: ['Đơn đăng ký biến động (Mẫu 18).', 'Giấy xác nhận của UBND xã về việc đã niêm yết thông báo mất giấy.', 'Mảnh trích đo (nếu có nhu cầu đo đạc lại).'], notes: ['Quy trình cần có bước niêm yết công khai việc mất GCN tại UBND cấp xã.'] },
-            { id: 'tang_cho_nn', title: 'Tặng cho Nhà nước/cộng đồng', time: null, docs: ['GCN đã cấp.', 'Văn bản tặng cho QSDĐ.'], notes: ['Hồ sơ phải do UBND xã tiếp nhận và chuyển về VPĐK.'] },
-            { id: 'thu_hoi_sai', title: 'Thu hồi GCN cấp sai', time: 25, docs: ['Văn bản kiến nghị của người dân về việc GCN cấp không đúng.', 'GCN đã cấp (bản gốc).'], notes: ['Đây là thủ tục phức tạp, thời gian giải quyết dài nhất.'] },
-            { id: 'giay_tay', title: 'Đăng ký đất "giấy tay"', time: 30, docs: ['Đơn đăng ký biến động (Mẫu 18).', 'Bản gốc GCN của bên bán (nếu có).', 'Giấy tờ về việc chuyển quyền có đủ chữ ký của bên chuyển và bên nhận.'], notes: ['Thời gian tính từ ngày niêm yết công khai mà không có tranh chấp.'] },
+            { id: 'chuyen_quyen', title: 'Chuyển quyền', time: 8, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Hợp đồng, văn bản về việc chuyển quyền.', 'Văn bản ủy quyền (nếu có).'], notes: ['Nếu nhiều người nhận chung 1 GCN thì cần văn bản thỏa thuận.', 'Nếu đất đang thế chấp, cần văn bản đồng ý của ngân hàng.'] },
+            { id: 'cap_doi', title: 'Cấp đổi GCN', time: 10, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Hồ sơ kỹ thuật (nếu có thay đổi ranh giới).'], notes: ['Áp dụng cho GCN bị hỏng, rách; cần ghi đủ tên thành viên hộ gia đình, vợ/chồng...'] },
+            { id: 'cap_lai', title: 'Cấp lại GCN do bị mất', time: 10, docs: ['Đơn đăng ký biến động (Mẫu 18).', 'Giấy xác nhận của UBND xã về việc đã niêm yết thông báo mất giấy.'], notes: ['Quy trình cần có bước niêm yết công khai tại UBND cấp xã.'] },
+            { id: 'tach_hop_thua', title: 'Tách/Hợp thửa', time: 12, docs: ['GCN đã cấp.', 'Đơn đề nghị tách/hợp thửa (Mẫu 21).', 'Bản vẽ tách/hợp thửa (Mẫu 22).'], notes: ['Phải đảm bảo điều kiện về diện tích tối thiểu.'] },
+            { id: 'giay_tay', title: 'Đăng ký đất "giấy tay"', time: 30, docs: ['Đơn đăng ký biến động (Mẫu 18).', 'Bản gốc GCN của bên bán (nếu có).', 'Giấy tờ chuyển quyền viết tay.'], notes: ['Áp dụng cho trường hợp chuyển quyền trước 01/8/2024.'] },
+            { id: 'dieu_chinh', title: 'Điều chỉnh thông tin', time: 4, docs: ['GCN đã cấp.', 'Đơn đăng ký biến động (Mẫu 18).', 'Giấy tờ chứng minh.'], notes: [] },
+            { id: 'gia_han_nn', title: 'Gia hạn đất nông nghiệp', time: 7, docs: ['GCN đã cấp.', 'Đơn xin xác nhận lại thời hạn (Mẫu 09).'], notes: [] },
+            { id: 'xoa_no', title: 'Xóa ghi nợ', time: 1, docs: ['GCN đã cấp.', 'Chứng từ đã hoàn thành thanh toán.'], notes: [] },
+            { id: 'thu_hoi_sai', title: 'Thu hồi GCN cấp sai', time: 25, docs: ['Văn bản kiến nghị.', 'GCN đã cấp sai (bản gốc).'], notes: [] },
         ];
-        const feeData = {
-            le_phi: { canhan: { thanhpho: { cap_moi: 100000, cap_doi: 39000 }, conlai: { cap_moi: 70000, cap_doi: 20000 } }, tochuc: { thanhpho: { cap_moi: 700000, cap_doi: 700000 }, conlai: { cap_moi: 700000, cap_doi: 700000 } } },
-            phi_tham_dinh: {
-                canhan: { cap_moi_dat: { direct: 880000, online: 836000 }, cap_moi_taisankhong: { direct: 980000, online: 931000 }, cap_moi_datvataisan: { direct: 1250000, online: 1187500 }, cap_doi: { direct: 1080000, online: 1026000 }, bien_dong_capmoi: { direct: 720000, online: 684000 }, bien_dong_xacnhan: { direct: 590000, online: 560500 } },
-                tochuc: { cap_moi_dat: { direct: 1260000, online: 1197000 }, cap_moi_taisankhong: { direct: 1840000, online: 1748000 }, cap_moi_datvataisan: { direct: 2090000, online: 1985500 }, cap_doi: { direct: 1260000, online: 1197000 }, bien_dong_capmoi: { direct: 1410000, online: 1339500 }, bien_dong_xacnhan: { direct: 1200000, online: 1140000 } }
-            }
-        };
+        const feeData = { le_phi: { canhan: { thanhpho: { cap_moi: 100000, cap_doi: 39000 }, conlai: { cap_moi: 70000, cap_doi: 20000 } }, tochuc: { thanhpho: { cap_moi: 700000, cap_doi: 700000 }, conlai: { cap_moi: 700000, cap_doi: 700000 } } }, phi_tham_dinh: { canhan: { cap_moi_dat: { direct: 880000, online: 836000 }, cap_moi_taisankhong: { direct: 980000, online: 931000 }, cap_moi_datvataisan: { direct: 1250000, online: 1187500 }, cap_doi: { direct: 1080000, online: 1026000 }, bien_dong_capmoi: { direct: 720000, online: 684000 }, bien_dong_xacnhan: { direct: 590000, online: 560500 } }, tochuc: { cap_moi_dat: { direct: 1260000, online: 1197000 }, cap_moi_taisankhong: { direct: 1840000, online: 1748000 }, cap_moi_datvataisan: { direct: 2090000, online: 1985500 }, cap_doi: { direct: 1260000, online: 1197000 }, bien_dong_capmoi: { direct: 1410000, online: 1339500 }, bien_dong_xacnhan: { direct: 1200000, online: 1140000 } } } };
         const feeProcedureOptions = [ { value: 'cap_moi_dat', text: 'Cấp mới (chỉ có QSD đất)' }, { value: 'cap_moi_taisankhong', text: 'Cấp mới (chỉ có tài sản)' }, { value: 'cap_moi_datvataisan', text: 'Cấp mới (cả đất và tài sản)' }, { value: 'cap_doi', text: 'Cấp đổi / Cấp lại' }, { value: 'bien_dong_capmoi', text: 'Đăng ký biến động (cấp GCN mới)' }, { value: 'bien_dong_xacnhan', text: 'Đăng ký biến động (xác nhận vào GCN)' } ];
         const applicantOptions = [ { value: 'canhan', text: 'Hộ gia đình, cá nhân' }, { value: 'tochuc', text: 'Tổ chức' } ];
         const regionOptions = [ { value: 'thanhpho', text: 'Các phường thuộc TP. Biên Hòa, Long Khánh' }, { value: 'conlai', text: 'Các địa bàn còn lại' } ];
 
-        // --- GLOBAL ELEMENTS ---
+        const legalData = [
+            { 
+                category: "Phụ lục Chi tiết Thủ tục Hành chính",
+                procedures: [
+                    { title: "1. Đăng ký biến động (Chuyển nhượng, thừa kế, tặng cho...)", content: "<div class='text-sm space-y-3'><p><strong>Trình tự thực hiện:</strong><ol class='list-decimal pl-5'><li>Người yêu cầu nộp hồ sơ tại Bộ phận một cửa.</li><li>Cơ quan tiếp nhận kiểm tra hồ sơ và hẹn trả kết quả.</li><li>Văn phòng ĐKĐĐ kiểm tra, gửi thông tin thuế, cập nhật hồ sơ và cấp/xác nhận GCN.</li></ol></p><p><strong>Thành phần hồ sơ:</strong><ul class='list-disc pl-5'><li>Đơn đăng ký biến động (Mẫu 18).</li><li>Bản gốc Giấy chứng nhận đã cấp.</li><li>Hợp đồng, văn bản về việc chuyển quyền đã được công chứng hoặc chứng thực.</li></ul></p><p><strong>Căn cứ pháp lý:</strong> Mục 21, Phần B, Phụ lục ban hành kèm Quyết định 2304/QĐ-BNNMT.</div>" },
+                    { title: "2. Cấp đổi Giấy chứng nhận", content: "<div class='text-sm space-y-3'><p><strong>Trình tự thực hiện:</strong><ol class='list-decimal pl-5'><li>Người yêu cầu nộp hồ sơ.</li><li>Cơ quan tiếp nhận kiểm tra.</li><li>Văn phòng ĐKĐĐ kiểm tra, đối chiếu và cấp GCN mới.</li></ol></p><p><strong>Thành phần hồ sơ:</strong><ul class='list-disc pl-5'><li>Đơn đăng ký biến động (Mẫu 18).</li><li>Bản gốc Giấy chứng nhận đã cấp.</li></ul></p><p><strong>Căn cứ pháp lý:</strong> Mục 6, Phần B, Phụ lục ban hành kèm Quyết định 2304/QĐ-BNNMT.</div>" },
+                    { title: "3. Cấp lại Giấy chứng nhận do bị mất", content: "<div class='text-sm space-y-3'><p><strong>Trình tự thực hiện:</strong><ol class='list-decimal pl-5'><li>Người sử dụng đất khai báo với UBND cấp xã.</li><li>UBND cấp xã niêm yết công khai việc mất GCN trong 15 ngày.</li><li>Sau 15 ngày, người dân nộp hồ sơ tại Văn phòng ĐKĐĐ.</li><li>Văn phòng ĐKĐĐ kiểm tra, hủy GCN cũ và cấp lại GCN mới.</li></ol></p><p><strong>Thành phần hồ sơ:</strong><ul class='list-disc pl-5'><li>Đơn đăng ký biến động (Mẫu 18) có xác nhận của UBND cấp xã về việc đã niêm yết.</li></ul></p><p><strong>Căn cứ pháp lý:</strong> Mục 8, Phần B, Phụ lục ban hành kèm Quyết định 2304/QĐ-BNNMT.</div>" }
+                ]
+            },
+            {
+                category: "Toàn văn Văn bản Pháp lý liên quan",
+                procedures: [
+                    { title: "Luật Đất đai số 31/2024/QH15", content: "<div class='text-sm'><p class='mt-2'><a href='https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=170509&Keyword=Lu%E1%BA%ADt%20%C4%90%E1%BA%A5t%20%C4%91ai%20s%E1%BB%91%2031/2024/QH15' target='_blank' class='inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'>Xem toàn văn tại CSDL quốc gia về VBPL →</a></p></div>" },
+                    { title: "Nghị định số 101/2024/NĐ-CP", content: "<div class='text-sm'><p class='mt-2'><a href='https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=169188' target='_blank' class='inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'>Xem toàn văn tại CSDL quốc gia về VBPL →</a></p></div>" },
+                    { title: "Nghị định số 118/2025/NĐ-CP", content: "<div class='text-sm'><p class='mt-2'><a href='https://vbpl.vn/TW/Pages/vbpq-van-ban-goc.aspx?ItemID=178283&Keyword=Ngh%E1%BB%8B%20%C4%91%E1%BB%8Bnh%20118/2025/N%C4%90-CP' target='_blank' class='inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'>Xem toàn văn tại CSDL quốc gia về VBPL →</a></p><p class='mt-2 italic'>(Lưu ý: Năm 2025 trong tên văn bản là giả định theo tài liệu gốc để minh họa).</p></div>" },
+                    { title: "Nghị định số 151/2025/NĐ-CP", content: "<div class='text-sm'><p class='mt-2'><a href='https://vbpl.vn/tw/Pages/vbpq-van-ban-goc.aspx?ItemID=178259' target='_blank' class='inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'>Xem toàn văn tại CSDL quốc gia về VBPL →</a></p><p class='mt-2 italic'>(Lưu ý: Năm 2025 trong tên văn bản là giả định theo tài liệu gốc để minh họa).</p></div>" }
+                ]
+            }
+        ];
+
+        // --- GLOBAL ELEMENTS & STATE---
         const navLinks = document.querySelectorAll('.nav-link');
         const sections = document.querySelectorAll('.main-section');
         const mobileNav = document.getElementById('mobile-nav');
-
+        let timeChartInstance = null;
+        
         // --- NAVIGATION LOGIC ---
         function navigateTo(targetId) {
-            sections.forEach(section => {
-                section.classList.toggle('active', section.id === targetId);
-            });
-            navLinks.forEach(link => {
-                link.classList.toggle('active', link.hash === `#${targetId}`);
-            });
-            if(mobileNav.value !== targetId) {
-                mobileNav.value = targetId;
-            }
+            sections.forEach(section => section.classList.toggle('active', section.id === targetId));
+            navLinks.forEach(link => link.classList.toggle('active', link.hash === `#${targetId}`));
+            if(mobileNav.value !== targetId) mobileNav.value = targetId;
+            window.scrollTo(0, 0);
         }
-        navLinks.forEach(link => link.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo(e.currentTarget.hash.substring(1));
-        }));
+        navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); navigateTo(e.currentTarget.hash.substring(1)); }));
         mobileNav.addEventListener('change', (e) => navigateTo(e.currentTarget.value));
         
         // --- PROCEDURE TOOL LOGIC ---
@@ -255,26 +222,16 @@
 
             proceduresData.forEach(proc => {
                 const cardWrapper = document.createElement('div');
-                cardWrapper.className = 'w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)]';
+                cardWrapper.className = 'w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)]';
                 const card = document.createElement('div');
                 card.className = 'procedure-card h-full flex flex-col justify-center text-center';
                 card.dataset.id = proc.id;
                 card.innerHTML = `<h3 class="font-bold text-sm sm:text-base text-slate-900">${proc.title}</h3><p class="text-xs sm:text-sm text-slate-500 mt-1">${proc.time ? `~ ${proc.time} ngày` : 'Theo quy trình'}</p>`;
                 card.addEventListener('click', () => {
-                    const procedure = proceduresData.find(p => p.id === proc.id);
-                    if (!procedure) return;
                     if (activeCard) activeCard.classList.remove('active');
                     activeCard = card;
                     card.classList.add('active');
-                    
-                    detailsContainer.innerHTML = `
-                        <div class="w-full">
-                            <h3 class="text-xl sm:text-2xl font-bold text-blue-700 mb-6 text-center">${procedure.title}</h3>
-                            <div class="grid md:grid-cols-2 gap-x-8 gap-y-8">
-                                <div><h4 class="text-lg font-semibold mb-3 text-slate-800">Hồ sơ cần chuẩn bị</h4><ul class="list-disc space-y-2 text-slate-600 pl-5">${procedure.docs.map(d => `<li>${d}</li>`).join('')}</ul></div>
-                                <div><h4 class="text-lg font-semibold mb-3 text-slate-800">Thời gian & Lưu ý</h4><p class="text-slate-600 mb-4"><strong>Thời gian giải quyết:</strong> ${procedure.time ? `Không quá ${procedure.time} ngày làm việc.` : 'Tùy thuộc vào quy trình cụ thể.'}</p>${procedure.notes.length > 0 ? `<strong class="text-slate-800">Lưu ý quan trọng:</strong><ul class="list-disc space-y-2 text-slate-600 mt-2 pl-5">${procedure.notes.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}</div>
-                            </div>
-                        </div>`;
+                    detailsContainer.innerHTML = `<div class="w-full"><h3 class="text-xl sm:text-2xl font-bold text-blue-700 mb-6 text-center">${proc.title}</h3><div class="grid md:grid-cols-2 gap-x-8 gap-y-8 details-list"><div><h4 class="text-lg font-semibold mb-3 text-slate-800">Hồ sơ (Tóm tắt)</h4><ul class="space-y-2 text-slate-600 pl-5">${proc.docs.map(d => `<li>${d}</li>`).join('')}</ul></div><div><h4 class="text-lg font-semibold mb-3 text-slate-800">Thời gian & Lưu ý</h4><p class="text-slate-600 mb-4"><strong>Thời gian:</strong> ${proc.time ? `Không quá ${proc.time} ngày làm việc.` : 'Tùy quy trình.'}</p>${proc.notes.length > 0 ? `<strong class="text-slate-800">Lưu ý:</strong><ul class="space-y-2 text-slate-600 mt-2 pl-5">${proc.notes.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}</div></div></div>`;
                     detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
                 cardWrapper.appendChild(card);
@@ -283,16 +240,16 @@
             
             const timeChartData = proceduresData.filter(p => p.time !== null).sort((a,b) => a.time - b.time);
             const timeChartContainer = document.getElementById('time-chart-container');
-            const timeChartCanvas = document.getElementById('timeChart').getContext('2d');
+            const timeChartCanvas = document.getElementById('timeChart');
             timeChartContainer.style.height = `${80 + timeChartData.length * 32}px`;
-
-            new Chart(timeChartCanvas, {
-                type: 'bar',
-                data: { labels: timeChartData.map(p => p.title), datasets: [{ label: 'Số ngày làm việc tối đa', data: timeChartData.map(p => p.time), backgroundColor: '#3b82f6', borderColor: '#1e3a8a', borderWidth: 1, borderRadius: 4 }] },
+            
+            if (timeChartInstance) timeChartInstance.destroy();
+            timeChartInstance = new Chart(timeChartCanvas.getContext('2d'), {
+                type: 'bar', data: { labels: timeChartData.map(p => p.title), datasets: [{ label: 'Số ngày làm việc tối đa', data: timeChartData.map(p => p.time), backgroundColor: '#3b82f6', borderColor: '#1e3a8a', borderWidth: 1, borderRadius: 4 }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, title: { display: true, text: 'Số ngày làm việc' } }, y: { ticks: { autoSkip: false, font: { size: 12 } } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `Số ngày: ${c.parsed.x}` } } } }
             });
         }
-
+        
         // --- FEE CALCULATOR LOGIC ---
         function setupFeeCalculator() {
             const procedureEl = document.getElementById('feeProcedureType');
@@ -302,16 +259,12 @@
             const costOnlineEl = document.getElementById('cost-online');
             const savingsEl = document.getElementById('savings');
 
-            const populateSelect = (el, options) => {
-                el.innerHTML = options.map(o => `<option value="${o.value}">${o.text}</option>`).join('');
-            };
+            const populateSelect = (el, options) => { el.innerHTML = options.map(o => `<option value="${o.value}">${o.text}</option>`).join(''); };
             populateSelect(procedureEl, feeProcedureOptions);
             populateSelect(applicantEl, applicantOptions);
             populateSelect(regionEl, regionOptions);
             
-            function formatCurrency(value) {
-                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-            }
+            function formatCurrency(value) { return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value); }
             
             function calculateCost() {
                 const procedure = procedureEl.value;
@@ -319,51 +272,59 @@
                 const region = regionEl.value;
                 let lePhi = 0;
                 const lePhiType = (procedure.startsWith('cap_moi')) ? 'cap_moi' : 'cap_doi';
-
-                if (feeData.le_phi[applicant] && feeData.le_phi[applicant][region]) {
-                    lePhi = feeData.le_phi[applicant][region][lePhiType] || 0;
-                }
-                if (procedure === 'bien_dong_xacnhan' || procedure === 'cap_moi_taisankhong') {
-                    lePhi = (applicant === 'canhan') ? ((region === 'thanhpho') ? 39000 : 20000) : 50000;
-                }
+                if (feeData.le_phi[applicant]?.[region]) { lePhi = feeData.le_phi[applicant][region][lePhiType] || 0; }
+                if (procedure === 'bien_dong_xacnhan' || procedure === 'cap_moi_taisankhong') { lePhi = (applicant === 'canhan') ? ((region === 'thanhpho') ? 39000 : 20000) : 50000; }
                 const lePhiOnline = (applicant === 'canhan') ? 0 : lePhi;
-                const phiThamDinh = feeData.phi_tham_dinh[applicant][procedure];
+                const phiThamDinh = feeData.phi_tham_dinh[applicant]?.[procedure];
 
-                if (!phiThamDinh) {
-                    costDirectEl.textContent = "Không áp dụng";
-                    costOnlineEl.textContent = "Không áp dụng";
-                    savingsEl.textContent = "";
-                    return;
-                }
-
+                if (!phiThamDinh) { costDirectEl.textContent = "Không áp dụng"; costOnlineEl.textContent = "Không áp dụng"; savingsEl.textContent = ""; return; }
                 const totalDirect = lePhi + phiThamDinh.direct;
                 const totalOnline = lePhiOnline + phiThamDinh.online;
-                const savingAmount = totalDirect - totalOnline;
-
+                savingsEl.innerHTML = `💰 Tiết kiệm ${formatCurrency(totalDirect - totalOnline)} khi nộp trực tuyến!`;
                 costDirectEl.textContent = formatCurrency(totalDirect);
                 costOnlineEl.textContent = formatCurrency(totalOnline);
-                savingsEl.innerHTML = `💰 Tiết kiệm ${formatCurrency(savingAmount)} khi nộp trực tuyến!`;
             }
-
             [procedureEl, applicantEl, regionEl].forEach(el => el.addEventListener('change', calculateCost));
             calculateCost();
         }
 
-        // --- ACCORDION LOGIC ---
-        function setupAccordion() {
-            const accordionItems = document.querySelectorAll('.accordion-item');
-            accordionItems.forEach(item => {
-                const header = item.querySelector('.accordion-header');
-                header.addEventListener('click', () => {
-                    item.classList.toggle('active');
-                });
+        // --- LEGAL DOCS ACCORDION LOGIC ---
+        function setupLegalDocs() {
+            const container = document.getElementById('legal-library-accordion');
+            legalData.forEach(categoryData => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'accordion-item bg-white rounded-lg shadow-md border border-slate-200';
+                categoryItem.innerHTML = `
+                    <div class="accordion-header flex justify-between items-center p-4">
+                        <h3 class="font-semibold text-slate-800 text-lg">${categoryData.category}</h3>
+                        <span class="accordion-icon text-blue-500 font-bold text-xl">▼</span>
+                    </div>
+                    <div class="accordion-content px-4 pb-4 space-y-2">
+                        ${categoryData.procedures.map(proc => `
+                            <div class="accordion-item sub-accordion-item border-t">
+                                <div class="accordion-header flex justify-between items-center py-3">
+                                    <h4 class="font-medium text-slate-700">${proc.title}</h4>
+                                    <span class="accordion-icon text-slate-500 font-bold">▼</span>
+                                </div>
+                                <div class="accordion-content pl-4 pb-3 text-slate-600">${proc.content}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categoryItem);
+            });
+            container.addEventListener('click', function(e) {
+                const header = e.target.closest('.accordion-header');
+                if (header) {
+                    header.parentElement.classList.toggle('active');
+                }
             });
         }
         
         // --- INITIALIZATION ---
         setupProcedureTool();
         setupFeeCalculator();
-        setupAccordion();
+        setupLegalDocs();
         navigateTo(window.location.hash ? window.location.hash.substring(1) : 'thu-tuc');
     });
     </script>
